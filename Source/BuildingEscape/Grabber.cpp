@@ -28,19 +28,10 @@ void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UE_LOG(LogTemp, Warning, TEXT("Grabber Reporting For Duty!"));
+//	UE_LOG(LogTemp, Warning, TEXT("Grabber Reporting For Duty!"));
 
-	///look for attached Physics Handle
-	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
-	if (PhysicsHandle)
-	{
-		//If Physics handle is found don't do anything
-	} 
-	else
-	{
-		//log out the error
-		UE_LOG(LogTemp, Error, TEXT("PhysicsHandle NOT FOUND on %s!"), *GetOwner()->GetName());
-	}
+	FindPhysicsHandelComponent();
+
 
 	//look for attached InputComponent
 	InputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
@@ -57,6 +48,21 @@ void UGrabber::BeginPlay()
 	}
 }
 
+
+void UGrabber::FindPhysicsHandelComponent()
+{
+	///look for attached Physics Handle
+	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
+	if (PhysicsHandle)
+	{
+		//If Physics handle is found don't do anything
+	}
+	else
+	{
+		//log out the error
+		UE_LOG(LogTemp, Error, TEXT("PhysicsHandle NOT FOUND on %s!"), *GetOwner()->GetName());
+	}
+}
 
 // Called every frame
 void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -103,9 +109,6 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s is Hit!"), (*ActorHit->GetName()));
 	}
-
-	
-
 }
 
 void UGrabber::Grab()

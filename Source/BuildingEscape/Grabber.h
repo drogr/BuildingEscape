@@ -21,6 +21,8 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -34,5 +36,9 @@ private:
 	//start ray-cast and grab what is within reach
 	void Grab();
 	
-	void Release();
+	//called when grab is released
+	void Release();	
+	
+	//Find attached physics handle
+	void FindPhysicsHandelComponent();
 };
