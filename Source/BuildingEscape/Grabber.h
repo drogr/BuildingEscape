@@ -28,5 +28,10 @@ public:
 private:
 	float Reach = 100.0f; //How far ahead of the player can we reach
 	UPhysicsHandleComponent* PhysicsHandle = nullptr;
+
+	UInputComponent* InputComponent = nullptr;
+
+	//start ray-cast and grab what is within reach
+	void Grab();
 	
 };
