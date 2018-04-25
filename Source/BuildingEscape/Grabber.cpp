@@ -5,6 +5,10 @@
 #include "Runtime/Engine/Classes/GameFramework/Controller.h"
 #include "Runtime/Engine/Classes/Kismet/KismetSystemLibrary.h"
 #include "DrawDebugHelpers.h"
+#include "Components/ActorComponent.h"
+#include "Public/CollisionQueryParams.h"
+#include "Engine/World.h"
+#include "Engine/EngineTypes.h"
 
 #define OUT
 
@@ -56,9 +60,29 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 		10.0f
 	);
 
-	//Ray-cast out to reach distance. will need variable to set that distance
 
+	//setup query parameters
+	FCollisionQueryParams TraceParamaters(FName(TEXT("")), false, GetOwner());
+
+	//Ray-cast out to reach distance. will need variable to set that distance
+	FHitResult Hit;
+	GetWorld()->LineTraceSingleByObjectType
+	(
+		OUT Hit,
+		PlayerViewPointLocation,
+		LineTraceEnd,
+		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
+		TraceParamaters
+	);
 	//see what we hit
+	//FString WhatsHit = Hit.GetActor()->GetName(); <----my first try
+	AActor* ActorHit = Hit.GetActor();
+	if (ActorHit)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s is Hit!"), (*ActorHit->GetName()));
+	}
+
+	
 
 }
 
