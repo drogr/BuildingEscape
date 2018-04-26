@@ -8,6 +8,8 @@
 #include "Grabber.generated.h"
 
 
+
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BUILDINGESCAPE_API UGrabber : public UActorComponent
 {
@@ -20,6 +22,8 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+
+
 
 
 
@@ -41,4 +45,9 @@ private:
 	
 	//Find attached physics handle
 	void FindPhysicsHandelComponent();
+
+	void SetupInputComponent();
+	
+	//Return hit for first body in reach
+	const FHitResult GetFirstPhysicsBodyInReach();
 };

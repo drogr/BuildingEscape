@@ -9,6 +9,8 @@
 #include "Public/CollisionQueryParams.h"
 #include "Engine/World.h"
 #include "Engine/EngineTypes.h"
+#include "Runtime/Engine/Classes/PhysicsEngine/PhysicsHandleComponent.h"
+#include "Components/PrimitiveComponent.h"
 
 #define OUT
 
@@ -27,13 +29,14 @@ UGrabber::UGrabber()
 void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
-
-//	UE_LOG(LogTemp, Warning, TEXT("Grabber Reporting For Duty!"));
-
-	FindPhysicsHandelComponent();
-
+	FindPhysicsHandelComponent();		//	UE_LOG(LogTemp, Warning, TEXT("Grabber Reporting For Duty!"));
+	SetupInputComponent();
+}
 
 	//look for attached InputComponent
+void UGrabber::SetupInputComponent()
+{
+
 	InputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
 	if (InputComponent)
 	{
@@ -48,10 +51,10 @@ void UGrabber::BeginPlay()
 	}
 }
 
-
+///look for attached Physics Handle
 void UGrabber::FindPhysicsHandelComponent()
 {
-	///look for attached Physics Handle
+	
 	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
 	if (PhysicsHandle)
 	{
@@ -75,19 +78,71 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OUT PlayerViewPointLocation, OUT PlayerViewPointRotation);
 	//UE_LOG(LogTemp, Warning, TEXT ("Location is: %s. Rotation is %s."),*PlayerViewPointLocation.ToString(),*PlayerViewPointRotation.ToString());
 
-	//draw a red trace to visualize
-	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector()*Reach; //FVector(0.0f, 0.0f, 100.0f);<----This was our test vector
-	DrawDebugLine(
-		GetWorld(),
-		PlayerViewPointLocation,
-		LineTraceEnd,
-		FColor(255, 0, 0),
-		false,
-		0.0f,
-		0.0f,
-		10.0f
-	);
+	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector()*Reach;
 
+	//If the physics handle is attached
+	if (PhysicsHandle->GrabbedComponent)
+	{
+		//MOVE THE OBJECT WE'RE HOLDING
+		PhysicsHandle->SetTargetLocation(LineTraceEnd);
+	}
+		
+
+	
+}
+
+void UGrabber::Grab()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Grab key pressed"));
+
+	//LineTrace and see if we reach any actors with physics body collision channel set
+	auto HitResult = GetFirstPhysicsBodyInReach();
+	auto ComponentToGrab = HitResult.GetComponent();
+	auto ActorHit = HitResult.GetActor();
+
+	//If we hit something then attach a physics handle
+	if (ActorHit != nullptr)
+	{
+	PhysicsHandle->GrabComponentAtLocationWithRotation
+		(
+			ComponentToGrab, //ComponentToGrab
+			NAME_None, //grab what bone name, if any
+			ComponentToGrab->GetOwner()->GetActorLocation(), //grab location
+			ComponentToGrab->GetOwner()->GetActorRotation() //grab rotation
+		);
+	}
+}
+
+void UGrabber::Release()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Grab key released"));
+
+	// Release Physics Handle
+	PhysicsHandle->ReleaseComponent();
+}
+
+const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
+{
+	// get the player view point this tick
+	 FVector PlayerViewPointLocation;
+	FRotator PlayerViewPointRotation;
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OUT PlayerViewPointLocation, OUT PlayerViewPointRotation);
+	//UE_LOG(LogTemp, Warning, TEXT ("Location is: %s. Rotation is %s."),*PlayerViewPointLocation.ToString(),*PlayerViewPointRotation.ToString());
+
+	////draw a red trace to visualize
+	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector()*Reach;
+
+	//FVector(0.0f, 0.0f, 100.0f);<----This was our test vector
+	//DrawDebugLine(
+	//	GetWorld(),
+	//	PlayerViewPointLocation,
+	//	LineTraceEnd,
+	//	FColor(255, 0, 0),
+	//	false,
+	//	0.0f,
+	//	0.0f,
+	//	10.0f
+	//);
 
 	//setup query parameters
 	FCollisionQueryParams TraceParamaters(FName(TEXT("")), false, GetOwner());
@@ -109,15 +164,6 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s is Hit!"), (*ActorHit->GetName()));
 	}
-}
-
-void UGrabber::Grab()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Grab key pressed"));
-}
-
-void UGrabber::Release()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Grab key released"));
+	return Hit;
 }
 
