@@ -4,6 +4,10 @@
 #include "GameFramework/Actor.h"
 #include "Math/Rotator.h"
 #include <Components/ActorComponent.h>
+#include "Runtime/Engine/Classes/Kismet/KismetSystemLibrary.h"
+#include "Runtime/Core/Public/Containers/Array.h"
+#include "Components/PrimitiveComponent.h"
+#define OUT
 
 
 
@@ -23,7 +27,7 @@ void UopenDoor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ActorThatOpens = GetWorld()->GetFirstPlayerController()->GetPawn();
+	//ActorThatOpens = GetWorld()->GetFirstPlayerController()->GetPawn();
 	//find the owning actor
 	Owner = GetOwner();
 }
@@ -46,7 +50,7 @@ void UopenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// Poll the TriggerVolume every frame
-	if (PressurePlate->IsOverlappingActor(ActorThatOpens))
+	if (GetTotalMAssOFActorsOnPlate() > 50.0f)
 	{
 		OpenDoor();
 		LastDoorOpenTime = GetWorld()->GetTimeSeconds();
@@ -57,7 +61,22 @@ void UopenDoor::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompon
 	{
 		CloseDoor();
 	}
+}
 
+float UopenDoor::GetTotalMAssOFActorsOnPlate()
+{
+	float TotalMass = 0.0f;
 
+	//find all of the overlapping actors
+	TArray<AActor*> OverlappingActors;
+	PressurePlate->GetOverlappingActors(OUT OverlappingActors);
+
+	//iterate through them adding their masses
+	for (auto& Actor : OverlappingActors) //each Actor in the array OverlappingActors
+	{
+		TotalMass += Actor->FindComponentByClass<UPrimitiveComponent>()->GetMass();
+		UE_LOG(LogTemp, Warning, TEXT("%s on Pressure Plate"), *Actor->GetName());
+	}
+	return TotalMass;
 }
 

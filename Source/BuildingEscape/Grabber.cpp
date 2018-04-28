@@ -110,8 +110,6 @@ void UGrabber::Release()
 
 const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
 {
-	FVector PlayerViewPointLocation;					//DrawDebugLine(GetWorld(),PlayerViewPointLocation,GetLineTraceEnd(),FColor(255, 0, 0),false,0.0f,0.0f,10.0f);
-
 	//setup query parameters
 	FCollisionQueryParams TraceParamaters(FName(TEXT("")), false, GetOwner());
 
@@ -119,7 +117,7 @@ const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
 	FHitResult HitResult;
 	GetWorld()->LineTraceSingleByObjectType	(
 		OUT HitResult,
-		PlayerViewPointLocation,
+		GetLineTraceStart(),
 		GetLineTraceEnd(),
 		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
 		TraceParamaters);
@@ -135,13 +133,20 @@ const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
 
 FVector UGrabber::GetLineTraceEnd()
 {
-	// get the player view point this tick
 	FVector PlayerViewPointLocation;
 	FRotator PlayerViewPointRotation;
 	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OUT PlayerViewPointLocation, OUT PlayerViewPointRotation);
-	//UE_LOG(LogTemp, Warning, TEXT ("Location is: %s. Rotation is %s."),*PlayerViewPointLocation.ToString(),*PlayerViewPointRotation.ToString());
 
 	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector()*Reach;
 
 	return LineTraceEnd;
+}
+
+FVector UGrabber::GetLineTraceStart()
+{
+	FVector PlayerViewPointLocation;
+	FRotator PlayerViewPointRotation;
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OUT PlayerViewPointLocation, OUT PlayerViewPointRotation);
+	
+	return PlayerViewPointLocation;
 }
